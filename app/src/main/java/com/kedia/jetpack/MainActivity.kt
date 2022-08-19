@@ -3,107 +3,135 @@ package com.kedia.jetpack
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.kedia.jetpack.ui.theme.JetpackExampleTheme
 
 data class Message(val author: String, val body: String)
 
+@ExperimentalMaterial3Api
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-           JetpackExampleTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Conversation(messages = SampleData.conversationSample)
-                }
-           }
-
-        }
-    }
-
-    @Composable
-    fun ClickCounter(clicks: Int, onClick: () -> Unit) {
-        Button(onClick = onClick) {
-            Text(text = "Button clicked $clicks times")
-        }
-    }
-
-    @Composable
-    fun Conversation(messages: List<Message>) {
-        LazyColumn {
-            items(messages) { message ->
-                MessageCard(message = message)
+            JetpackExampleTheme {
+                MyApp()
             }
         }
     }
 
     @Composable
-    fun MessageCard(message: Message) {
-        Row(
-            modifier = Modifier.padding(all = 8.dp)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.profile_picture),
-                contentDescription = "Profile Picture",
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .border(1.5.dp, MaterialTheme.colorScheme.secondary, CircleShape)
-            )
-            
-            Spacer(modifier = Modifier.width(8.dp))
+    private fun MyApp(names: List<String> = listOf("World", "Compose")) {
+        var shouldShowOnBoarding by rememberSaveable { mutableStateOf(true) }
 
-            var isExpanded by remember { mutableStateOf(false) }
-            val surfaceColor by animateColorAsState(
-                if (isExpanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
+        if (shouldShowOnBoarding) {
+            OnBoardingScreen(
+                onContinueClicked = {
+                    shouldShowOnBoarding = false
+                }
             )
-            
+        } else {
+            Greetings()
+        }
+    }
+
+    @Composable
+    fun OnBoardingScreen(onContinueClicked: () -> Unit) {
+        Surface {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Welcome to the Basics Codelab!")
+                Button(
+                    modifier = Modifier.padding(vertical = 24.dp),
+                    onClick = onContinueClicked
+                ) {
+                    Text("Continue")
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun Greetings(names: List<String> = List(1000) { "$it" }) {
+        LazyColumn(modifier = Modifier.padding(vertical = 4.dp)) {
+            items(names) { name ->
+                Greeting(name = name)
+            }
+        }
+    }
+
+    @Composable
+    private fun Greeting(name: String) {
+        Card(
+            modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
+        ) {
+            CardContent(name)
+        }
+    }
+
+    @Composable
+    private fun CardContent(name: String) {
+        var expanded by remember { mutableStateOf(false) }
+
+        Row(
+            modifier = Modifier
+                .padding(12.dp)
+                .animateContentSize(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow
+                    )
+                )
+        ) {
             Column(
                 modifier = Modifier
-                    .clickable {
-                        isExpanded = !isExpanded
-                    }
+                    .weight(1f)
+                    .padding(12.dp)
             ) {
+                Text(text = "Hello, ")
                 Text(
-                    text = message.author,
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.titleLarge
+                    text = name
                 )
-
-                Spacer(modifier = Modifier.width(4.dp))
-                
-                Surface(
-                    shape = MaterialTheme.shapes.medium,
-                    color = surfaceColor,
-                    modifier = Modifier
-                        .animateContentSize()
-                        .padding(1.dp)
-                ) {
+                if (expanded) {
                     Text(
-                        text = message.body,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(all = 4.dp),
-                        maxLines = if (isExpanded) Int.MAX_VALUE else 1
+                        text = ("Composem ipsum color sit lazy, " +
+                                "padding theme elit, sed do bouncy. ").repeat(4),
                     )
                 }
             }
+            IconButton(onClick = { expanded = !expanded }) {
+                Icon(
+                    imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                    contentDescription = if (expanded) {
+                        stringResource(R.string.show_less)
+                    } else {
+                        stringResource(R.string.show_more)
+                    }
+
+                )
+            }
         }
     }
-
 }
