@@ -30,11 +30,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    var count by remember { mutableStateOf(0) }
-                    ClickCounter(clicks = count, onClick = {
-                        count++
-                    })
-//                    Conversation(messages = SampleData.conversationSample)
+                    Conversation(messages = SampleData.conversationSample)
                 }
            }
 
