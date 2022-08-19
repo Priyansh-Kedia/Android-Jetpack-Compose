@@ -30,10 +30,21 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    Conversation(messages = SampleData.conversationSample)
+                    var count by remember { mutableStateOf(0) }
+                    ClickCounter(clicks = count, onClick = {
+                        count++
+                    })
+//                    Conversation(messages = SampleData.conversationSample)
                 }
            }
 
+        }
+    }
+
+    @Composable
+    fun ClickCounter(clicks: Int, onClick: () -> Unit) {
+        Button(onClick = onClick) {
+            Text(text = "Button clicked $clicks times")
         }
     }
 
@@ -84,8 +95,8 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     shape = MaterialTheme.shapes.medium,
                     color = surfaceColor,
-                    modifier = Modifier.
-                            animateContentSize()
+                    modifier = Modifier
+                        .animateContentSize()
                         .padding(1.dp)
                 ) {
                     Text(
